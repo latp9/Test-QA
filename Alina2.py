@@ -1,4 +1,5 @@
-b=9
+
 a=4
-print(b)
+
+
 print(a)
