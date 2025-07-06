@@ -12,8 +12,8 @@ logger = logging.getLogger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
 
-    
-    print("База отчищена")
+    # await delete_tables()
+    # print("База отчищена")
     await create_tables()
     print("Создание базы")
     print("Запуск") 
