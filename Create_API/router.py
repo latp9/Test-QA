@@ -15,17 +15,13 @@ router = APIRouter(
 
 
 
-@router.post("/Add")
-async def add_task(task: Annotated[STaskAdd, Depends()]) -> STaskId:
-    try:
-        task_id = await TaskRepository.add_one(task)
-        return {"ok": True, "task_id": task_id}
-    
-    except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=str(e)  # Покажет реальную ошибку
-        )
+@router.post("")
+async def add_task(
+        task: Annotated[STaskAdd, Depends()],
+) -> STaskId:
+    task_id = await TaskRepository.add_one(task)
+    return {"ok": True, "task_id": task_id}
+
 
 
 @router.get("/Find_all")
@@ -63,7 +59,7 @@ async def delete_task(task_id: int):
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Задача с ID {task_id} не найдена"
             )
-        return {"status": "Delete ID", "deleted_id": task_id}
+        return {"status": "DeleteID", "deleted_id": task_id}
     
     except SQLAlchemyError as e:
         raise HTTPException(

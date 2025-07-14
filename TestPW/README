@@ -1,0 +1,6 @@
+playwright codegen demo.playwright.dev/todomvc/#/ 
+запускает уже готовый код
+playwright codegen -o lesson.py https://demo.playwright.dev/todomvc/#/
+Запускает сайт и сохраяняет код в файл lesson.py
+
+playwright codegen -o test_kode.py https://edu.kode.ru/#napr/#/
