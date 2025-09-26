@@ -1,0 +1,75 @@
+@startuml research_agency_activity
+autonumber "<b><color:DarkSlateBlue>.</color></b> " 
+
+actor "Клиент" as Client
+participant "Web Browser" as Browser
+participant "API Gateway" as Gateway
+participant "Client Service" as ClientService
+participant "Researcher Service" as ResearcherService
+participant "Project Service" as ProjectService
+participant "Database" as Database
+participant "Email Service" as EmailService
+
+== Инициация запроса ==
+Client -> Browser : Заполняет форму запроса на исследователя
+Browser -> Gateway : HTTP POST /api/client-requests
+Gateway -> ClientService : REST API: createClientRequest()
+
+== Валидация и сохранение ==
+ClientService -> Database : SQL: INSERT INTO client_requests
+Database --> ClientService : ID созданного запроса
+ClientService --> Gateway : HTTP 201 Created
+Gateway --> Browser : Успешное создание запроса
+Browser --> Client : Отображение подтверждения
+
+== Автоматический подбор исследователей ==
+ClientService -> ResearcherService : gRPC: findSuitableResearchers(criteria)
+ResearcherService -> Database : SQL: SELECT * FROM researchers WHERE specialization = ? AND experience >= ?
+Database --> ResearcherService : Список подходящих исследователей
+
+alt Найдены подходящие кандидаты
+    ResearcherService --> ClientService : Список из 3-5 кандидатов
+    
+    == Формирование предложения ==
+    ClientService -> ClientService : Рассчитать стоимость услуг
+    ClientService -> EmailService : Отправить уведомление менеджеру
+    
+    == Ожидание выбора клиента ==
+    Client -> Browser : Просматривает предложение
+    Browser -> Gateway : HTTP GET /api/client-requests/{id}/candidates
+    Gateway -> ClientService : REST API: getRequestCandidates()
+    ClientService --> Gateway : Список кандидатов с ценами
+    Gateway --> Browser : Данные для отображения
+    Browser --> Client : Отображение кандидатов
+    
+    Client -> Browser : Выбирает исследователя
+    Browser -> Gateway : HTTP POST /api/client-requests/{id}/select-researcher
+    Gateway -> ClientService : REST API: selectResearcher(researcherId)
+    
+    == Создание проекта ==
+    ClientService -> ProjectService : REST API: createProject(requestId, researcherId)
+    ProjectService -> Database : SQL: INSERT INTO projects
+    Database --> ProjectService : ID созданного проекта
+    
+    == Уведомления ==
+    ProjectService -> EmailService : Отправить уведомление исследователю
+    ProjectService -> EmailService : Отправить подтверждение клиенту
+    
+    ProjectService --> ClientService : Проект создан успешно
+    ClientService --> Gateway : HTTP 200 OK
+    Gateway --> Browser : Подтверждение создания проекта
+    Browser --> Client : Отображение успешного результата
+    
+else Не найдено подходящих кандидатов
+    ResearcherService --> ClientService : Пустой список кандидатов
+    ClientService -> EmailService : Отправить уведомление менеджеру о необходимости ручного подбора
+    ClientService --> Gateway : HTTP 404 No suitable researchers found
+    Gateway --> Browser : Сообщение об отсутствии кандидатов
+    Browser --> Client : Уведомление о необходимости уточнения критериев
+end
+
+== Обновление статусов ==
+ClientService -> Database : SQL: UPDATE client_requests SET status = 'processing'
+ProjectService -> Database : SQL: UPDATE researchers SET status = 'busy'
+
+@enduml

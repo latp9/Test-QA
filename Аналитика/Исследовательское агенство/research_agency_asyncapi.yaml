@@ -1,0 +1,547 @@
+asyncapi: '2.6.0'
+info:
+  title: 'Research Agency Events API'
+  version: '1.0.0'
+  description: |
+    Асинхронные события для системы управления исследовательским агентством.
+    
+    ## Назначение
+    Event-driven архитектура для уведомлений, аудита и интеграций между микросервисами.
+    
+    ## Архитектурная роль
+    Центральная шина событий для синхронизации состояния между сервисами клиентов, исследователей и проектов.
+    
+  contact:
+    name: 'Development Team'
+    email: 'dev@research-agency.com'
+  license:
+    name: 'MIT'
+
+servers:
+  kafka-cluster:
+    url: 'kafka://kafka.research-agency.com:9092'
+    protocol: kafka
+    description: 'Production Kafka cluster'
+    bindings:
+      kafka:
+        schemaRegistryUrl: 'http://schema-registry:8081'
+        schemaRegistryVendor: 'confluent'
+    security:
+      - saslScram: []
+
+defaultContentType: application/json
+
+channels:
+  'research-agency.client-requests.events':
+    description: 'События жизненного цикла запросов клиентов'
+    bindings:
+      kafka:
+        topic: 'research-agency.client-requests.events'
+        partitions: 6
+        replicas: 3
+        configs:
+          retention.ms: 2592000000  # 30 дней
+          cleanup.policy: 'delete'
+          compression.type: 'snappy'
+    publish:
+      summary: 'Отправка событий запросов клиентов'
+      operationId: 'publishClientRequestEvent'
+      bindings:
+        kafka:
+          groupId: 'client-request-producers'
+          clientId: 'client-service'
+          acks: 'all'
+          key:
+            type: string
+            description: 'ID клиента для партиционирования'
+      message:
+        $ref: '#/components/messages/ClientRequestEvent'
+    subscribe:
+      summary: 'Получение событий запросов клиентов'
+      operationId: 'subscribeClientRequestEvent'
+      bindings:
+        kafka:
+          groupId: 'client-request-consumers'
+          clientId: 'notification-service'
+      message:
+        $ref: '#/components/messages/ClientRequestEvent'
+
+  'research-agency.researchers.events':
+    description: 'События изменений статуса исследователей'
+    bindings:
+      kafka:
+        topic: 'research-agency.researchers.events'
+        partitions: 4
+        replicas: 3
+        configs:
+          retention.ms: 2592000000
+          cleanup.policy: 'compact'
+    publish:
+      summary: 'Отправка событий исследователей'
+      operationId: 'publishResearcherEvent'
+      bindings:
+        kafka:
+          groupId: 'researcher-producers'
+          clientId: 'researcher-service'
+          acks: 'all'
+          key:
+            type: string
+            description: 'ID исследователя для партиционирования'
+      message:
+        $ref: '#/components/messages/ResearcherEvent'
+    subscribe:
+      summary: 'Получение событий исследователей'
+      operationId: 'subscribeResearcherEvent'
+      bindings:
+        kafka:
+          groupId: 'researcher-consumers'
+          clientId: 'project-service'
+      message:
+        $ref: '#/components/messages/ResearcherEvent'
+
+  'research-agency.projects.events':
+    description: 'События жизненного цикла проектов'
+    bindings:
+      kafka:
+        topic: 'research-agency.projects.events'
+        partitions: 8
+        replicas: 3
+        configs:
+          retention.ms: 7776000000  # 90 дней
+          cleanup.policy: 'delete'
+    publish:
+      summary: 'Отправка событий проектов'
+      operationId: 'publishProjectEvent'
+      bindings:
+        kafka:
+          groupId: 'project-producers'
+          clientId: 'project-service'
+          acks: 'all'
+          key:
+            type: string
+            description: 'ID проекта для партиционирования'
+      message:
+        $ref: '#/components/messages/ProjectEvent'
+    subscribe:
+      summary: 'Получение событий проектов'
+      operationId: 'subscribeProjectEvent'
+      bindings:
+        kafka:
+          groupId: 'project-consumers'
+          clientId: 'finance-service'
+      message:
+        $ref: '#/components/messages/ProjectEvent'
+
+  'research-agency.time-entries.events':
+    description: 'События учета рабочего времени'
+    bindings:
+      kafka:
+        topic: 'research-agency.time-entries.events'
+        partitions: 12
+        replicas: 3
+        configs:
+          retention.ms: 604800000  # 7 дней
+          cleanup.policy: 'delete'
+    publish:
+      summary: 'Отправка событий рабочего времени'
+      operationId: 'publishTimeEntryEvent'
+      bindings:
+        kafka:
+          groupId: 'time-entry-producers'
+          clientId: 'time-tracking-service'
+          acks: '1'
+          key:
+            type: string
+            description: 'ID исследователя для партиционирования'
+      message:
+        $ref: '#/components/messages/TimeEntryEvent'
+    subscribe:
+      summary: 'Получение событий рабочего времени'
+      operationId: 'subscribeTimeEntryEvent'
+      bindings:
+        kafka:
+          groupId: 'time-entry-consumers'
+          clientId: 'finance-service'
+      message:
+        $ref: '#/components/messages/TimeEntryEvent'
+
+  'research-agency.notifications.requests':
+    description: 'Запросы на отправку уведомлений'
+    bindings:
+      kafka:
+        topic: 'research-agency.notifications.requests'
+        partitions: 4
+        replicas: 2
+        configs:
+          retention.ms: 86400000  # 1 день
+          cleanup.policy: 'delete'
+    publish:
+      summary: 'Отправка запросов на уведомления'
+      operationId: 'publishNotificationRequest'
+      bindings:
+        kafka:
+          groupId: 'notification-request-producers'
+          clientId: 'client-service'
+          acks: '1'
+      message:
+        $ref: '#/components/messages/NotificationRequest'
+    subscribe:
+      summary: 'Получение запросов на уведомления'
+      operationId: 'subscribeNotificationRequest'
+      bindings:
+        kafka:
+          groupId: 'notification-consumers'
+          clientId: 'email-service'
+      message:
+        $ref: '#/components/messages/NotificationRequest'
+
+components:
+  messages:
+    ClientRequestEvent:
+      name: 'ClientRequestEvent'
+      title: 'Событие запроса клиента'
+      summary: 'Событие изменения состояния запроса клиента'
+      contentType: application/json
+      headers:
+        type: object
+        properties:
+          eventType:
+            type: string
+            enum: ['CREATED', 'PROCESSING', 'COMPLETED', 'CANCELLED']
+          source:
+            type: string
+            description: 'Источник события'
+          timestamp:
+            type: string
+            format: date-time
+      payload:
+        $ref: '#/components/schemas/ClientRequestEventPayload'
+      examples:
+        - name: 'clientRequestCreated'
+          summary: 'Создание запроса клиента'
+          headers:
+            eventType: 'CREATED'
+            source: 'client-service'
+            timestamp: '2024-01-15T10:30:00Z'
+          payload:
+            request_id: 123
+            client_id: 456
+            title: 'Маркетинговое исследование рынка'
+            specialization: 'Маркетинговые исследования'
+            min_experience: 3
+            priority: 'high'
+
+    ResearcherEvent:
+      name: 'ResearcherEvent'
+      title: 'Событие исследователя'
+      summary: 'Событие изменения статуса или данных исследователя'
+      contentType: application/json
+      headers:
+        type: object
+        properties:
+          eventType:
+            type: string
+            enum: ['REGISTERED', 'STATUS_CHANGED', 'UPDATED', 'DEACTIVATED']
+          source:
+            type: string
+          timestamp:
+            type: string
+            format: date-time
+      payload:
+        $ref: '#/components/schemas/ResearcherEventPayload'
+      examples:
+        - name: 'researcherStatusChanged'
+          summary: 'Изменение статуса исследователя'
+          headers:
+            eventType: 'STATUS_CHANGED'
+            source: 'researcher-service'
+            timestamp: '2024-01-15T11:00:00Z'
+          payload:
+            researcher_id: 789
+            old_status: 'available'
+            new_status: 'busy'
+            project_id: 123
+
+    ProjectEvent:
+      name: 'ProjectEvent'
+      title: 'Событие проекта'
+      summary: 'Событие жизненного цикла проекта'
+      contentType: application/json
+      headers:
+        type: object
+        properties:
+          eventType:
+            type: string
+            enum: ['CREATED', 'STARTED', 'COMPLETED', 'CANCELLED']
+          source:
+            type: string
+          timestamp:
+            type: string
+            format: date-time
+      payload:
+        $ref: '#/components/schemas/ProjectEventPayload'
+      examples:
+        - name: 'projectCreated'
+          summary: 'Создание проекта'
+          headers:
+            eventType: 'CREATED'
+            source: 'project-service'
+            timestamp: '2024-01-15T11:30:00Z'
+          payload:
+            project_id: 123
+            client_id: 456
+            researcher_id: 789
+            title: 'Маркетинговое исследование IT рынка'
+            estimated_hours: 80
+            total_budget: 36000.00
+
+    TimeEntryEvent:
+      name: 'TimeEntryEvent'
+      title: 'Событие учета времени'
+      summary: 'Событие добавления или подтверждения рабочего времени'
+      contentType: application/json
+      headers:
+        type: object
+        properties:
+          eventType:
+            type: string
+            enum: ['CREATED', 'APPROVED', 'REJECTED']
+          source:
+            type: string
+          timestamp:
+            type: string
+            format: date-time
+      payload:
+        $ref: '#/components/schemas/TimeEntryEventPayload'
+      examples:
+        - name: 'timeEntryCreated'
+          summary: 'Создание записи времени'
+          headers:
+            eventType: 'CREATED'
+            source: 'time-tracking-service'
+            timestamp: '2024-01-15T12:00:00Z'
+          payload:
+            time_entry_id: 234
+            project_id: 123
+            researcher_id: 789
+            date: '2024-01-15'
+            hours_worked: 4.5
+            task_type: 'research'
+
+    NotificationRequest:
+      name: 'NotificationRequest'
+      title: 'Запрос уведомления'
+      summary: 'Запрос на отправку уведомления пользователям'
+      contentType: application/json
+      headers:
+        type: object
+        properties:
+          notificationType:
+            type: string
+            enum: ['EMAIL', 'SMS', 'PUSH']
+          priority:
+            type: string
+            enum: ['LOW', 'MEDIUM', 'HIGH']
+          timestamp:
+            type: string
+            format: date-time
+      payload:
+        $ref: '#/components/schemas/NotificationRequestPayload'
+      examples:
+        - name: 'clientRequestNotification'
+          summary: 'Уведомление о новом запросе'
+          headers:
+            notificationType: 'EMAIL'
+            priority: 'HIGH'
+            timestamp: '2024-01-15T10:35:00Z'
+          payload:
+            to: 'manager@research-agency.com'
+            subject: 'Новый запрос от клиента'
+            template: 'new_client_request'
+            data:
+              client_name: 'ООО ТехноПром'
+              request_title: 'Маркетинговое исследование рынка'
+
+  schemas:
+    ClientRequestEventPayload:
+      type: object
+      required:
+        - request_id
+        - client_id
+        - title
+        - specialization
+      properties:
+        request_id:
+          type: integer
+          description: 'ID запроса клиента'
+        client_id:
+          type: integer
+          description: 'ID клиента'
+        title:
+          type: string
+          description: 'Название запроса'
+        description:
+          type: string
+          description: 'Описание проекта'
+        specialization:
+          type: string
+          description: 'Требуемая специализация'
+        min_experience:
+          type: integer
+          description: 'Минимальный опыт'
+        priority:
+          type: string
+          enum: ['low', 'medium', 'high']
+        metadata:
+          type: object
+          additionalProperties: true
+
+    ResearcherEventPayload:
+      type: object
+      required:
+        - researcher_id
+      properties:
+        researcher_id:
+          type: integer
+          description: 'ID исследователя'
+        old_status:
+          type: string
+          enum: ['available', 'busy', 'on_vacation']
+        new_status:
+          type: string
+          enum: ['available', 'busy', 'on_vacation']
+        project_id:
+          type: integer
+          description: 'ID проекта (если применимо)'
+        reason:
+          type: string
+          description: 'Причина изменения статуса'
+
+    ProjectEventPayload:
+      type: object
+      required:
+        - project_id
+        - client_id
+        - researcher_id
+        - title
+      properties:
+        project_id:
+          type: integer
+          description: 'ID проекта'
+        client_id:
+          type: integer
+          description: 'ID клиента'
+        researcher_id:
+          type: integer
+          description: 'ID исследователя'
+        title:
+          type: string
+          description: 'Название проекта'
+        description:
+          type: string
+          description: 'Описание проекта'
+        estimated_hours:
+          type: integer
+          description: 'Планируемое количество часов'
+        total_budget:
+          type: number
+          format: float
+          description: 'Общий бюджет проекта'
+
+    TimeEntryEventPayload:
+      type: object
+      required:
+        - time_entry_id
+        - project_id
+        - researcher_id
+        - date
+        - hours_worked
+      properties:
+        time_entry_id:
+          type: integer
+          description: 'ID записи времени'
+        project_id:
+          type: integer
+          description: 'ID проекта'
+        researcher_id:
+          type: integer
+          description: 'ID исследователя'
+        date:
+          type: string
+          format: date
+          description: 'Дата работы'
+        hours_worked:
+          type: number
+          format: float
+          description: 'Отработанные часы'
+        task_type:
+          type: string
+          enum: ['research', 'analysis', 'reporting']
+        description:
+          type: string
+          description: 'Описание выполненной работы'
+
+    NotificationRequestPayload:
+      type: object
+      required:
+        - to
+        - subject
+        - template
+      properties:
+        to:
+          type: string
+          description: 'Получатель уведомления'
+        subject:
+          type: string
+          description: 'Тема уведомления'
+        template:
+          type: string
+          description: 'Шаблон уведомления'
+        data:
+          type: object
+          additionalProperties: true
+          description: 'Данные для шаблона'
+
+  securitySchemes:
+    saslScram:
+      type: scramSha512
+      description: 'SASL/SCRAM authentication'
+
+x-kafka-config:
+  cluster:
+    brokers: 3
+    replication:
+      default: 2
+      critical_topics: 3
+    resources:
+      broker_memory: '2Gi'
+      broker_cpu: '1'
+      broker_storage: '50Gi'
+  
+  producers:
+    default_config:
+      acks: 'all'
+      retries: 5
+      batch.size: 16384
+      linger.ms: 10
+      compression.type: 'snappy'
+    
+  consumers:
+    default_config:
+      auto.commit.enable: false
+      max.poll.records: 100
+      session.timeout.ms: 30000
+      
+  monitoring:
+    metrics:
+      - 'kafka.server:type=BrokerTopicMetrics,name=MessagesInPerSec'
+      - 'kafka.consumer:type=consumer-fetch-manager-metrics'
+    alerts:
+      - name: 'high_consumer_lag'
+        condition: 'consumer_lag > 1000'
+        severity: 'warning'
+        
+  security:
+    authentication:
+      protocol: 'SASL_PLAINTEXT'
+      mechanism: 'SCRAM-SHA-256'

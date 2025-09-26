@@ -1,0 +1,885 @@
+openapi: 3.0.3
+info:
+  title: Research Agency Management API
+  description: |
+    REST API для управления исследовательским агентством.
+    
+    ## Назначение
+    API для управления исследователями, клиентами, проектами и учетом рабочего времени.
+    
+    ## Основные возможности
+    - Управление базой исследователей
+    - Обработка запросов клиентов
+    - Назначение исследователей на проекты
+    - Учет рабочего времени
+    - Финансовые расчеты и отчетность
+    
+  version: '1.0.0'
+  contact:
+    name: Development Team
+    email: dev@research-agency.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: https://api.research-agency.com/v1
+    description: Production server
+  - url: https://staging-api.research-agency.com/v1
+    description: Staging server
+
+tags:
+  - name: researchers
+    description: Операции с исследователями
+  - name: clients
+    description: Управление клиентами
+  - name: requests
+    description: Обработка запросов клиентов
+  - name: projects
+    description: Управление проектами
+  - name: time-tracking
+    description: Учет рабочего времени
+  - name: reports
+    description: Финансовые отчеты и аналитика
+
+paths:
+  # Researchers endpoints
+  /researchers:
+    get:
+      tags: [researchers]
+      summary: Получить список исследователей
+      description: Возвращает список исследователей с фильтрацией по статусу и специализации
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+          description: Номер страницы
+          example: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+          description: Количество записей на странице
+          example: 20
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [available, busy, on_vacation]
+          description: Фильтр по статусу исследователя
+        - name: specialization
+          in: query
+          schema:
+            type: string
+          description: Фильтр по специализации
+        - name: min_experience
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+          description: Минимальный опыт работы в годах
+      responses:
+        '200':
+          description: Список исследователей
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  researchers:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Researcher'
+                  total:
+                    type: integer
+                    example: 150
+                  page:
+                    type: integer
+                    example: 1
+                  limit:
+                    type: integer
+                    example: 20
+              example:
+                researchers:
+                  - id: 1
+                    first_name: "Иван"
+                    last_name: "Петров"
+                    email: "ivan.petrov@example.com"
+                    specialization: "Маркетинговые исследования"
+                    experience_years: 5
+                    hourly_rate: 45.00
+                    status: "available"
+                total: 150
+                page: 1
+                limit: 20
+    
+    post:
+      tags: [researchers]
+      summary: Создать нового исследователя
+      description: Регистрация нового исследователя в системе
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResearcherCreateRequest'
+            example:
+              first_name: "Анна"
+              last_name: "Иванова"
+              email: "anna.ivanova@example.com"
+              phone: "+7-999-123-45-70"
+              specialization: "Социологические исследования"
+              experience_years: 4
+              hourly_rate: 50.00
+      responses:
+        '201':
+          description: Исследователь создан
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Researcher'
+        '400':
+          description: Некорректный запрос
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "VALIDATION_ERROR"
+                  message:
+                    type: string
+                    example: "Неверные данные в запросе"
+                  details:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        field:
+                          type: string
+                        error:
+                          type: string
+        '409':
+          description: Email уже существует
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "EMAIL_EXISTS"
+                  message:
+                    type: string
+                    example: "Пользователь с таким email уже зарегистрирован"
+
+  /researchers/{id}:
+    get:
+      tags: [researchers]
+      summary: Получить исследователя по ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID исследователя
+      responses:
+        '200':
+          description: Информация об исследователе
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Researcher'
+        '404':
+          description: Исследователь не найден
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "RESEARCHER_NOT_FOUND"
+                  message:
+                    type: string
+                    example: "Исследователь с указанным ID не найден"
+    
+    put:
+      tags: [researchers]
+      summary: Обновить информацию об исследователе
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResearcherUpdateRequest'
+      responses:
+        '200':
+          description: Информация обновлена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Researcher'
+        '404':
+          description: Исследователь не найден
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "RESEARCHER_NOT_FOUND"
+                  message:
+                    type: string
+                    example: "Исследователь с указанным ID не найден"
+
+  # Client requests endpoints
+  /client-requests:
+    get:
+      tags: [requests]
+      summary: Получить список запросов клиентов
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+          description: Номер страницы
+          example: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+          description: Количество записей на странице
+          example: 20
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [new, processing, completed, cancelled]
+          description: Фильтр по статусу запроса
+        - name: priority
+          in: query
+          schema:
+            type: string
+            enum: [low, medium, high]
+      responses:
+        '200':
+          description: Список запросов
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  requests:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ClientRequest'
+                  total:
+                    type: integer
+    
+    post:
+      tags: [requests]
+      summary: Создать новый запрос клиента
+      description: Создание запроса на подбор исследователя
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClientRequestCreate'
+            example:
+              client_id: 1
+              title: "Маркетинговое исследование рынка"
+              description: "Требуется исследование рынка IT услуг в Москве"
+              required_specialization: "Маркетинговые исследования"
+              min_experience: 3
+              project_duration: 30
+              budget_range: "50000-100000"
+              priority: "high"
+      responses:
+        '201':
+          description: Запрос создан
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientRequest'
+
+  /client-requests/{id}/process:
+    post:
+      tags: [requests]
+      summary: Обработать запрос клиента
+      description: Автоматический подбор исследователей по критериям запроса
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Результаты подбора
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  request_id:
+                    type: integer
+                  suitable_researchers:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Researcher'
+                  total_found:
+                    type: integer
+              example:
+                request_id: 1
+                suitable_researchers:
+                  - id: 1
+                    first_name: "Иван"
+                    last_name: "Петров"
+                    specialization: "Маркетинговые исследования"
+                    experience_years: 5
+                    hourly_rate: 45.00
+                total_found: 3
+
+  # Projects endpoints
+  /projects:
+    post:
+      tags: [projects]
+      summary: Создать новый проект
+      description: Создание проекта на основе выбранного исследователя и запроса клиента
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectCreateRequest'
+            example:
+              client_id: 1
+              researcher_id: 1
+              request_id: 1
+              title: "Маркетинговое исследование IT рынка Москвы"
+              description: "Комплексное исследование рынка IT услуг"
+              start_date: "2024-02-01"
+              estimated_hours: 80
+              hourly_rate: 45.00
+      responses:
+        '201':
+          description: Проект создан
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+
+  /projects/{id}/time-entries:
+    post:
+      tags: [time-tracking]
+      summary: Добавить запись рабочего времени
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TimeEntryCreate'
+            example:
+              researcher_id: 1
+              date: "2024-02-01"
+              hours_worked: 4.5
+              description: "Анализ конкурентов и подготовка вопросов для интервью"
+              task_type: "research"
+      responses:
+        '201':
+          description: Запись времени добавлена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TimeEntry'
+
+  # Reports endpoints
+  /reports/financial:
+    get:
+      tags: [reports]
+      summary: Получить финансовый отчет
+      description: Генерация финансового отчета за указанный период
+      parameters:
+        - name: start_date
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+          description: Начальная дата периода
+        - name: end_date
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+          description: Конечная дата периода
+        - name: researcher_id
+          in: query
+          schema:
+            type: integer
+          description: Фильтр по исследователю (опционально)
+      responses:
+        '200':
+          description: Финансовый отчет
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FinancialReport'
+
+components:
+  schemas:
+    Researcher:
+      type: object
+      required:
+        - id
+        - first_name
+        - last_name
+        - email
+        - specialization
+        - experience_years
+        - hourly_rate
+        - status
+        - is_active
+      properties:
+        id:
+          type: integer
+          example: 1
+        first_name:
+          type: string
+          example: "Иван"
+        last_name:
+          type: string
+          example: "Петров"
+        email:
+          type: string
+          format: email
+          example: "ivan.petrov@example.com"
+        phone:
+          type: string
+          example: "+7-999-123-45-67"
+        specialization:
+          type: string
+          example: "Маркетинговые исследования"
+        experience_years:
+          type: integer
+          minimum: 0
+          example: 5
+        hourly_rate:
+          type: number
+          format: float
+          minimum: 0
+          example: 45.00
+        status:
+          type: string
+          enum: [available, busy, on_vacation]
+          example: "available"
+        is_active:
+          type: boolean
+          example: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    ResearcherCreateRequest:
+      type: object
+      required:
+        - first_name
+        - last_name
+        - email
+        - specialization
+        - experience_years
+        - hourly_rate
+      properties:
+        first_name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        last_name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+        specialization:
+          type: string
+          minLength: 1
+          maxLength: 200
+        experience_years:
+          type: integer
+          minimum: 0
+        hourly_rate:
+          type: number
+          format: float
+          minimum: 0
+
+    ResearcherUpdateRequest:
+      type: object
+      properties:
+        first_name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        last_name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        phone:
+          type: string
+        specialization:
+          type: string
+          minLength: 1
+          maxLength: 200
+        experience_years:
+          type: integer
+          minimum: 0
+        hourly_rate:
+          type: number
+          format: float
+          minimum: 0
+        status:
+          type: string
+          enum: [available, busy, on_vacation]
+
+    ClientRequest:
+      type: object
+      required:
+        - id
+        - client_id
+        - title
+        - required_specialization
+        - min_experience
+        - status
+        - priority
+      properties:
+        id:
+          type: integer
+        client_id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        required_specialization:
+          type: string
+        min_experience:
+          type: integer
+        project_duration:
+          type: integer
+        budget_range:
+          type: string
+        status:
+          type: string
+          enum: [new, processing, completed, cancelled]
+        priority:
+          type: string
+          enum: [low, medium, high]
+        created_at:
+          type: string
+          format: date-time
+
+    ClientRequestCreate:
+      type: object
+      required:
+        - client_id
+        - title
+        - required_specialization
+        - min_experience
+      properties:
+        client_id:
+          type: integer
+        title:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+        required_specialization:
+          type: string
+        min_experience:
+          type: integer
+          minimum: 0
+        project_duration:
+          type: integer
+          minimum: 1
+        budget_range:
+          type: string
+        priority:
+          type: string
+          enum: [low, medium, high]
+          default: "medium"
+
+    Project:
+      type: object
+      required:
+        - id
+        - client_id
+        - researcher_id
+        - request_id
+        - title
+        - start_date
+        - estimated_hours
+        - hourly_rate
+        - total_budget
+        - status
+      properties:
+        id:
+          type: integer
+        client_id:
+          type: integer
+        researcher_id:
+          type: integer
+        request_id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+        estimated_hours:
+          type: integer
+        hourly_rate:
+          type: number
+          format: float
+        total_budget:
+          type: number
+          format: float
+        status:
+          type: string
+          enum: [planned, active, completed, cancelled]
+        created_at:
+          type: string
+          format: date-time
+
+    ProjectCreateRequest:
+      type: object
+      required:
+        - client_id
+        - researcher_id
+        - request_id
+        - title
+        - start_date
+        - estimated_hours
+        - hourly_rate
+      properties:
+        client_id:
+          type: integer
+        researcher_id:
+          type: integer
+        request_id:
+          type: integer
+        title:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+        start_date:
+          type: string
+          format: date
+        estimated_hours:
+          type: integer
+          minimum: 1
+        hourly_rate:
+          type: number
+          format: float
+          minimum: 0
+
+    TimeEntry:
+      type: object
+      required:
+        - id
+        - project_id
+        - researcher_id
+        - date
+        - hours_worked
+        - description
+        - task_type
+        - is_approved
+      properties:
+        id:
+          type: integer
+        project_id:
+          type: integer
+        researcher_id:
+          type: integer
+        date:
+          type: string
+          format: date
+        hours_worked:
+          type: number
+          format: float
+        description:
+          type: string
+        task_type:
+          type: string
+          enum: [research, analysis, reporting]
+        is_approved:
+          type: boolean
+        approved_by:
+          type: integer
+        approved_at:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+
+    TimeEntryCreate:
+      type: object
+      required:
+        - researcher_id
+        - date
+        - hours_worked
+        - description
+        - task_type
+      properties:
+        researcher_id:
+          type: integer
+        date:
+          type: string
+          format: date
+        hours_worked:
+          type: number
+          format: float
+          maximum: 24
+        description:
+          type: string
+          minLength: 1
+        task_type:
+          type: string
+          enum: [research, analysis, reporting]
+
+    FinancialReport:
+      type: object
+      properties:
+        period:
+          type: object
+          properties:
+            start_date:
+              type: string
+              format: date
+            end_date:
+              type: string
+              format: date
+        total_revenue:
+          type: number
+          format: float
+        total_hours:
+          type: number
+          format: float
+        projects_count:
+          type: integer
+        researchers_count:
+          type: integer
+        projects:
+          type: array
+          items:
+            type: object
+            properties:
+              project_id:
+                type: integer
+              title:
+                type: string
+              revenue:
+                type: number
+                format: float
+              hours_worked:
+                type: number
+                format: float
+        researchers:
+          type: array
+          items:
+            type: object
+            properties:
+              researcher_id:
+                type: integer
+              name:
+                type: string
+              total_hours:
+                type: number
+                format: float
+              total_revenue:
+                type: number
+                format: float
+
+  parameters:
+    PageParam:
+      name: page
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+      description: Номер страницы
+      example: 1
+
+  responses:
+    BadRequest:
+      description: Некорректный запрос
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "VALIDATION_ERROR"
+              message:
+                type: string
+                example: "Неверные данные в запросе"
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    field:
+                      type: string
+                    error:
+                      type: string
+
+    NotFound:
+      description: Ресурс не найден
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "NOT_FOUND"
+              message:
+                type: string
+                example: "Запрашиваемый ресурс не найден"

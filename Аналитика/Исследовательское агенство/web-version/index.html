@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Research Agency - Веб-панель управления</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="web-app-container">
+        <!-- Боковая панель навигации -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <div class="logo-icon">🔬</div>
+                    <span class="logo-text">Research Agency</span>
+                </div>
+            </div>
+            
+            <ul class="sidebar-menu">
+                <li class="menu-item active" data-screen="dashboard-screen">
+                    <div class="menu-icon">📊</div>
+                    <span class="menu-text">Дашборд</span>
+                </li>
+                <li class="menu-item" data-screen="researchers-screen">
+                    <div class="menu-icon">👥</div>
+                    <span class="menu-text">Исследователи</span>
+                </li>
+                <li class="menu-item" data-screen="requests-screen">
+                    <div class="menu-icon">📋</div>
+                    <span class="menu-text">Запросы</span>
+                    <span class="badge">3</span>
+                </li>
+                <li class="menu-item" data-screen="projects-screen">
+                    <div class="menu-icon">📁</div>
+                    <span class="menu-text">Проекты</span>
+                    <span class="badge">8</span>
+                </li>
+                <li class="menu-item" data-screen="time-tracking-screen">
+                    <div class="menu-icon">⏱️</div>
+                    <span class="menu-text">Учет времени</span>
+                </li>
+                <li class="menu-item" data-screen="clients-screen">
+                    <div class="menu-icon">🏢</div>
+                    <span class="menu-text">Клиенты</span>
+                </li>
+                <li class="menu-item" data-screen="reports-screen">
+                    <div class="menu-icon">📈</div>
+                    <span class="menu-text">Отчеты</span>
+                </li>
+            </ul>
+            
+            <div class="sidebar-footer">
+                <div class="user-profile">
+                    <div class="user-avatar">👤</div>
+                    <div class="user-info">
+                        <div class="user-name">Администратор</div>
+                        <div class="user-role">Менеджер</div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Основной контент -->
+        <main class="main-content">
+            <!-- Верхняя панель -->
+            <header class="top-bar">
+                <div class="top-bar-left">
+                    <button class="menu-toggle" id="menuToggle">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </button>
+                    <h1 class="page-title">Дашборд</h1>
+                </div>
+                <div class="top-bar-right">
+                    <div class="search-container">
+                        <input type="text" placeholder="Поиск..." class="search-input">
+                        <div class="search-icon">🔍</div>
+                    </div>
+                    <div class="notifications">
+                        <button class="notification-btn">
+                            <div class="notification-icon">🔔</div>
+                            <span class="notification-count">5</span>
+                        </button>
+                    </div>
+                    <div class="quick-actions">
+                        <button class="action-btn" onclick="showScreen('add-researcher-screen')">
+                            <div class="action-icon">+</div>
+                            <span>Добавить</span>
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Контент экранов -->
+            <div class="content-area">
+                <!-- Главный экран -->
+                <div class="screen active" id="dashboard-screen">
+                    <div class="dashboard-grid">
+                        <!-- Статистика -->
+                        <div class="stats-grid">
+                            <div class="stat-card large">
+                                <div class="stat-icon">👥</div>
+                                <div class="stat-content">
+                                    <div class="stat-value">24</div>
+                                    <div class="stat-label">Исследователей</div>
+                                    <div class="stat-change positive">+2 за месяц</div>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon">📁</div>
+                                <div class="stat-content">
+                                    <div class="stat-value">8</div>
+                                    <div class="stat-label">Активных проектов</div>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon">📋</div>
+                                <div class="stat-content">
+                                    <div class="stat-value">3</div>
+                                    <div class="stat-label">Новых запросов</div>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon">💰</div>
+                                <div class="stat-content">
+                                    <div class="stat-value">156к</div>
+                                    <div class="stat-label">Доход за месяц</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Графики и диаграммы -->
+                        <div class="charts-section">
+                            <div class="chart-card">
+                                <h3>Доходность по месяцам</h3>
+                                <div class="chart-placeholder">
+                                    <div class="chart-bars">
+                                        <div class="chart-bar" style="height: 60%"></div>
+                                        <div class="chart-bar" style="height: 80%"></div>
+                                        <div class="chart-bar" style="height: 95%"></div>
+                                        <div class="chart-bar" style="height: 75%"></div>
+                                        <div class="chart-bar" style="height: 100%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="chart-card">
+                                <h3>Распределение по специализациям</h3>
+                                <div class="chart-placeholder pie-chart">
+                                    <div class="pie-segment" style="--percentage: 40"></div>
+                                    <div class="pie-segment" style="--percentage: 25"></div>
+                                    <div class="pie-segment" style="--percentage: 20"></div>
+                                    <div class="pie-segment" style="--percentage: 15"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Последняя активность и быстрый доступ -->
+                        <div class="dashboard-bottom">
+                            <div class="recent-activity">
+                                <h3>Последняя активность</h3>
+                                <div class="activity-list">
+                                    <div class="activity-item">
+                                        <div class="activity-icon">✅</div>
+                                        <div class="activity-content">
+                                            <div class="activity-title">Проект завершен</div>
+                                            <div class="activity-desc">Иван Петров завершил проект "Маркетинговое исследование"</div>
+                                            <div class="activity-time">2 часа назад</div>
+                                        </div>
+                                    </div>
+                                    <div class="activity-item">
+                                        <div class="activity-icon">📥</div>
+                                        <div class="activity-content">
+                                            <div class="activity-title">Новый запрос</div>
+                                            <div class="activity-desc">Компания "ТехноПро" запросила исследователя по Data Science</div>
+                                            <div class="activity-time">4 часа назад</div>
+                                        </div>
+                                    </div>
+                                    <div class="activity-item">
+                                        <div class="activity-icon">👥</div>
+                                        <div class="activity-content">
+                                            <div class="activity-title">Новый исследователь</div>
+                                            <div class="activity-desc">Алексей Козлов присоединился к команде</div>
+                                            <div class="activity-time">1 день назад</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="quick-access">
+                                <h3>Быстрый доступ</h3>
+                                <div class="quick-actions-grid">
+                                    <button class="quick-action-btn" onclick="showScreen('add-researcher-screen')">
+                                        <div class="action-icon">👥</div>
+                                        <span>Добавить исследователя</span>
+                                    </button>
+                                    <button class="quick-action-btn" onclick="showScreen('add-project-screen')">
+                                        <div class="action-icon">📁</div>
+                                        <span>Создать проект</span>
+                                    </button>
+                                    <button class="quick-action-btn" onclick="generateReport()">
+                                        <div class="action-icon">📊</div>
+                                        <span>Сформировать отчет</span>
+                                    </button>
+                                    <button class="quick-action-btn" onclick="showScreen('time-tracking-screen')">
+                                        <div class="action-icon">⏱️</div>
+                                        <span>Учет времени</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Экран управления исследователями -->
+                <div class="screen" id="researchers-screen">
+                    <div class="screen-header">
+                        <h2>Управление исследователями</h2>
+                        <div class="header-actions">
+                            <button class="btn-primary" onclick="showScreen('add-researcher-screen')">
+                                <div class="btn-icon">+</div>
+                                Добавить исследователя
+                            </button>
+                            <button class="btn-secondary">
+                                <div class="btn-icon">📥</div>
+                                Импорт
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="filters-bar">
+                        <div class="search-container">
+                            <input type="text" placeholder="Поиск по имени..." class="search-input">
+                            <div class="search-icon">🔍</div>
+                        </div>
+                        <div class="filter-group">
+                            <select class="filter-select">
+                                <option value="">Все статусы</option>
+                                <option value="available">Свободен</option>
+                                <option value="busy">Занят</option>
+                                <option value="on-vacation">В отпуске</option>
+                            </select>
+                            <select class="filter-select">
+                                <option value="">Все специализации</option>
+                                <option value="marketing">Маркетинг</option>
+                                <option value="data-science">Data Science</option>
+                                <option value="ux-research">UX Research</option>
+                            </select>
+                            <button class="btn-secondary">Фильтровать</button>
+                        </div>
+                    </div>
+
+                    <div class="researchers-grid">
+                        <!-- Карточки исследователей будут загружаться через JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Другие экраны будут добавлены аналогично -->
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

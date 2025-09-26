@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Research Agency - Управление исследователями</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <header class="header">
+            <div class="header-content">
+                <button class="back-btn" onclick="goBack()">←</button>
+                <h1 class="header-title">Главная</h1>
+                <button class="profile-btn">👤</button>
+            </div>
+        </header>
+        
+        <main class="main-content">
+            <!-- Главный экран -->
+            <div class="screen active" id="dashboard-screen">
+                <div class="dashboard-stats">
+                    <div class="stat-card">
+                        <div class="stat-value">24</div>
+                        <div class="stat-label">Исследователей</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">8</div>
+                        <div class="stat-label">Активных проектов</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">3</div>
+                        <div class="stat-label">Новых запросов</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">156к</div>
+                        <div class="stat-label">Доход за месяц</div>
+                    </div>
+                </div>
+
+                <div class="actions-grid">
+                    <button class="action-btn primary" onclick="showScreen('researchers-screen')">
+                        <div class="action-icon">👥</div>
+                        <span>Исследователи</span>
+                    </button>
+                    <button class="action-btn" onclick="showScreen('requests-screen')">
+                        <div class="action-icon">📋</div>
+                        <span>Запросы</span>
+                    </button>
+                    <button class="action-btn" onclick="showScreen('projects-screen')">
+                        <div class="action-icon">📊</div>
+                        <span>Проекты</span>
+                    </button>
+                    <button class="action-btn" onclick="showScreen('time-tracking-screen')">
+                        <div class="action-icon">⏱️</div>
+                        <span>Учет времени</span>
+                    </button>
+                    <button class="action-btn" onclick="showScreen('clients-screen')">
+                        <div class="action-icon">🏢</div>
+                        <span>Клиенты</span>
+                    </button>
+                    <button class="action-btn" onclick="showScreen('reports-screen')">
+                        <div class="action-icon">📈</div>
+                        <span>Отчеты</span>
+                    </button>
+                </div>
+
+                <div class="recent-activity">
+                    <h3>Последняя активность</h3>
+                    <div class="activity-list">
+                        <div class="activity-item">
+                            <div class="activity-icon">✅</div>
+                            <div class="activity-content">
+                                <div class="activity-title">Проект завершен</div>
+                                <div class="activity-desc">Иван Петров завершил проект "Маркетинговое исследование"</div>
+                                <div class="activity-time">2 часа назад</div>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <div class="activity-icon">📥</div>
+                            <div class="activity-content">
+                                <div class="activity-title">Новый запрос</div>
+                                <div class="activity-desc">Компания "ТехноПро" запросила исследователя по Data Science</div>
+                                <div class="activity-time">4 часа назад</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Экран управления исследователями -->
+            <div class="screen" id="researchers-screen">
+                <div class="screen-header">
+                    <h2>Управление исследователями</h2>
+                    <button class="btn-primary" onclick="showScreen('add-researcher-screen')">+ Добавить исследователя</button>
+                </div>
+
+                <div class="filters">
+                    <input type="text" placeholder="Поиск по имени..." class="search-input">
+                    <select class="filter-select">
+                        <option value="">Все статусы</option>
+                        <option value="available">Свободен</option>
+                        <option value="busy">Занят</option>
+                        <option value="on-vacation">В отпуске</option>
+                    </select>
+                    <select class="filter-select">
+                        <option value="">Все специализации</option>
+                        <option value="marketing">Маркетинг</option>
+                        <option value="data-science">Data Science</option>
+                        <option value="ux-research">UX Research</option>
+                    </select>
+                </div>
+
+                <div class="researchers-list">
+                    <div class="researcher-card">
+                        <div class="researcher-avatar">👨‍💼</div>
+                        <div class="researcher-info">
+                            <h3>Иван Петров</h3>
+                            <p>Маркетинговые исследования</p>
+                            <div class="researcher-details">
+                                <span class="experience">Опыт: 5 лет</span>
+                                <span class="rate">Ставка: 45$/ч</span>
+                                <span class="status available">Свободен</span>
+                            </div>
+                        </div>
+                        <button class="btn-secondary" onclick="showResearcherDetails(1)">Подробнее</button>
+                    </div>
+
+                    <div class="researcher-card">
+                        <div class="researcher-avatar">👩‍🔬</div>
+                        <div class="researcher-info">
+                            <h3>Мария Сидорова</h3>
+                            <p>Data Science</p>
+                            <div class="researcher-details">
+                                <span class="experience">Опыт: 3 года</span>
+                                <span class="rate">Ставка: 55$/ч</span>
+                                <span class="status busy">Занята</span>
+                            </div>
+                        </div>
+                        <button class="btn-secondary" onclick="showResearcherDetails(2)">Подробнее</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Экран добавления исследователя -->
+            <div class="screen" id="add-researcher-screen">
+                <div class="form-container">
+                    <h2>Добавление нового исследователя</h2>
+                    
+                    <div class="input-group">
+                        <label for="researcher-name">ФИО *</label>
+                        <input type="text" id="researcher-name" placeholder="Иван Иванов" class="text-input">
+                    </div>
+
+                    <div class="input-group">
+                        <label for="researcher-email">Email *</label>
+                        <input type="email" id="researcher-email" placeholder="ivan@example.com" class="text-input">
+                    </div>
+
+                    <div class="input-group">
+                        <label for="researcher-phone">Телефон</label>
+                        <input type="tel" id="researcher-phone" placeholder="+7 (999) 999-99-99" class="text-input">
+                    </div>
+
+                    <div class="input-group">
+                        <label for="researcher-specialization">Специализация *</label>
+                        <select id="researcher-specialization" class="select-input">
+                            <option value="">Выберите специализацию</option>
+                            <option value="marketing">Маркетинговые исследования</option>
+                            <option value="data-science">Data Science</option>
+                            <option value="ux-research">UX Research</option>
+                            <option value="business-analytics">Бизнес-аналитика</option>
+                        </select>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="researcher-experience">Опыт работы (лет) *</label>
+                        <input type="number" id="researcher-experience" min="0" max="50" class="number-input">
+                    </div>
+
+                    <div class="input-group">
+                        <label for="researcher-rate">Часовая ставка ($) *</label>
+                        <input type="number" id="researcher-rate" min="10" max="200" step="5" class="number-input">
+                    </div>
+
+                    <div class="input-group">
+                        <label for="researcher-cv">Резюме (PDF, DOCX)</label>
+                        <input type="file" id="researcher-cv" accept=".pdf,.docx" class="file-input">
+                    </div>
+
+                    <button class="btn-primary" onclick="addResearcher()">Зарегистрировать исследователя</button>
+                </div>
+            </div>
+
+            <!-- Экран обработки запросов -->
+            <div class="screen" id="requests-screen">
+                <div class="screen-header">
+                    <h2>Запросы клиентов</h2>
+                </div>
+
+                <div class="requests-tabs">
+                    <button class="tab-btn active" onclick="switchRequestTab('new')">Новые (3)</button>
+                    <button class="tab-btn" onclick="switchRequestTab('processing')">В обработке (2)</button>
+                    <button class="tab-btn" onclick="switchRequestTab('completed')">Завершенные (15)</button>
+                </div>
+
+                <div class="requests-list">
+                    <div class="request-card new">
+                        <div class="request-header">
+                            <h3>Маркетинговое исследование рынка</h3>
+                            <span class="priority high">Высокий</span>
+                        </div>
+                        <div class="request-client">Компания: ТехноПро</div>
+                        <div class="request-details">
+                            <span>Специализация: Маркетинг</span>
+                            <span>Опыт: от 3 лет</span>
+                            <span>Срок: 30 дней</span>
+                        </div>
+                        <div class="request-actions">
+                            <button class="btn-primary" onclick="processRequest(1)">Обработать</button>
+                            <button class="btn-secondary">Отклонить</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Экран управления проектами -->
+            <div class="screen" id="projects-screen">
+                <div class="screen-header">
+                    <h2>Управление проектами</h2>
+                    <button class="btn-primary" onclick="showScreen('add-project-screen')">+ Новый проект</button>
+                </div>
+
+                <div class="projects-tabs">
+                    <button class="tab-btn active" onclick="switchProjectTab('active')">Активные (8)</button>
+                    <button class="tab-btn" onclick="switchProjectTab('planned')">Запланированные (3)</button>
+                    <button class="tab-btn" onclick="switchProjectTab('completed')">Завершенные (15)</button>
+                </div>
+
+                <div class="projects-list">
+                    <div class="project-card">
+                        <div class="project-header">
+                            <h3>Исследование рынка FinTech</h3>
+                            <span class="project-status in-progress">В процессе</span>
+                        </div>
+                        <div class="project-details">
+                            <div class="project-client">Клиент: Банк "Стандарт"</div>
+                            <div class="project-researcher">Исследователь: Мария Сидорова</div>
+                            <div class="project-timeline">Срок: 15.01 - 15.02.2024</div>
+                            <div class="project-budget">Бюджет: 75 000 ₽</div>
+                        </div>
+                        <div class="project-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 65%"></div>
+                            </div>
+                            <span class="progress-text">65% выполнено</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Экран учета рабочего времени -->
+            <div class="screen" id="time-tracking-screen">
+                <div class="screen-header">
+                    <h2>Учет рабочего времени</h2>
+                </div>
+
+                <div class="time-tracking-container">
+                    <div class="current-timer">
+                        <div class="timer-display">00:00:00</div>
+                        <div class="timer-project">Проект: Исследование рынка FinTech</div>
+                        <div class="timer-actions">
+                            <button class="btn-primary" onclick="startTimer()">▶️ Старт</button>
+                            <button class="btn-secondary" onclick="stopTimer()">⏹️ Стоп</button>
+                            <button class="btn-secondary" onclick="pauseTimer()">⏸️ Пауза</button>
+                        </div>
+                    </div>
+
+                    <div class="time-entries">
+                        <h3>Сегодняшние записи</h3>
+                        <div class="time-entry">
+                            <div class="entry-time">2ч 30мин</div>
+                            <div class="entry-project">Исследование рынка FinTech</div>
+                            <div class="entry-description">Анализ конкурентов</div>
+                            <div class="entry-status confirmed">Подтверждено</div>
+                        </div>
+                        <div class="time-entry">
+                            <div class="entry-time">1ч 15мин</div>
+                            <div class="entry-project">Исследование рынка FinTech</div>
+                            <div class="entry-description">Подготовка отчета</div>
+                            <div class="entry-status pending">На проверке</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Экран финансовой отчетности -->
+            <div class="screen" id="reports-screen">
+                <div class="screen-header">
+                    <h2>Финансовая отчетность</h2>
+                    <button class="btn-primary" onclick="generateReport()">📊 Сформировать отчет</button>
+                </div>
+
+                <div class="reports-period">
+                    <select class="period-select" onchange="changeReportPeriod(this.value)">
+                        <option value="month">За месяц</option>
+                        <option value="quarter">За квартал</option>
+                        <option value="year">За год</option>
+                    </select>
+                </div>
+
+                <div class="financial-stats">
+                    <div class="financial-card">
+                        <div class="financial-value">156 000 ₽</div>
+                        <div class="financial-label">Общий доход</div>
+                    </div>
+                    <div class="financial-card">
+                        <div class="financial-value">89 500 ₽</div>
+                        <div class="financial-label">Расходы на зарплаты</div>
+                    </div>
+                    <div class="financial-card">
+                        <div class="financial-value">66 500 ₽</div>
+                        <div class="financial-label">Чистая прибыль</div>
+                    </div>
+                    <div class="financial-card">
+                        <div class="financial-value">42.6%</div>
+                        <div class="financial-label">Рентабельность</div>
+                    </div>
+                </div>
+
+                <div class="projects-breakdown">
+                    <h3>Доходность по проектам</h3>
+                    <div class="breakdown-list">
+                        <div class="breakdown-item">
+                            <div class="project-name">Исследование рынка FinTech</div>
+                            <div class="project-revenue">+75 000 ₽</div>
+                            <div class="project-profitability">+58%</div>
+                        </div>
+                        <div class="breakdown-item">
+                            <div class="project-name">Анализ пользовательского опыта</div>
+                            <div class="project-revenue">+45 000 ₽</div>
+                            <div class="project-profitability">+42%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Экран деталей исследователя -->
+            <div class="screen" id="researcher-details-screen">
+                <div class="screen-header">
+                    <h2>Детали исследователя</h2>
+                </div>
+
+                <div class="researcher-details-container">
+                    <div class="researcher-header">
+                        <div class="researcher-avatar-large">👨‍💼</div>
+                        <div class="researcher-info-large">
+                            <h3 id="detail-name">Иван Петров</h3>
+                            <p id="detail-specialization">Маркетинговые исследования</p>
+                            <span class="status-badge-large" id="detail-status">Свободен</span>
+                        </div>
+                    </div>
+
+                    <div class="details-grid">
+                        <div class="detail-item">
+                            <span class="detail-label">Email:</span>
+                            <span id="detail-email">ivan.petrov@example.com</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Телефон:</span>
+                            <span id="detail-phone">+7 (912) 345-67-89</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Опыт работы:</span>
+                            <span id="detail-experience">5 лет</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Часовая ставка:</span>
+                            <span id="detail-rate">45$/ч</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Завершено проектов:</span>
+                            <span id="detail-projects">12</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Рейтинг:</span>
+                            <span id="detail-rating">4.8/5</span>
+                        </div>
+                    </div>
+
+                    <div class="researcher-actions">
+                        <button class="btn-primary" onclick="assignToProject()">Назначить на проект</button>
+                        <button class="btn-secondary" onclick="editResearcher()">Редактировать</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Экран управления клиентами -->
+            <div class="screen" id="clients-screen">
+                <div class="screen-header">
+                    <h2>Управление клиентами</h2>
+                    <button class="btn-primary" onclick="showScreen('add-client-screen')">+ Добавить клиента</button>
+                </div>
+
+                <div class="clients-list">
+                    <div class="client-card">
+                        <div class="client-avatar">🏢</div>
+                        <div class="client-info">
+                            <h3>ТехноПро</h3>
+                            <p>IT-компания</p>
+                            <div class="client-details">
+                                <span class="projects-count">Проектов: 3</span>
+                                <span class="total-spent">Потрачено: 120 000 ₽</span>
+                            </div>
+                        </div>
+                        <button class="btn-secondary">Контакты</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
