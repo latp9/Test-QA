@@ -17,14 +17,14 @@ router = APIRouter(
 
 @router.post("")
 async def add_task(
-        task: Annotated[STaskAdd, Depends()],
+        task:STaskAdd
 ) -> STaskId:
     task_id = await TaskRepository.add_one(task)
     return {"ok": True, "task_id": task_id}
 
 
 
-@router.get("/Find_all")
+@router.get("/find_all")
 async def get_tasks() -> list[STask]:
     """Получить все задачи"""
     try:

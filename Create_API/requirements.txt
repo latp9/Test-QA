@@ -3,3 +3,6 @@
  sqlalchemy
  aiosqlite
  pydantic
+ pytest
+ pytest-asyncio
+ httpx

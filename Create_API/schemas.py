@@ -6,8 +6,8 @@ from pydantic import ConfigDict
 class STaskAdd(BaseModel):
     Имя: str
     Возраст: int
-    Пожелания: str | None = None
-    description: str | None = None
+    Работа: str | None = None
+    Образование: str | None = None
 
 
 
@@ -24,8 +24,8 @@ class STaskDelete(BaseModel):
     ok: bool = True
     task_id: int
 
-    class Config:
-        schema_extra = {
+    class ConfigDict:
+        json_schema_extra = {
             "example": {
                 "ok": True,
                 "task_id": 1

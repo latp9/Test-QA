@@ -23,8 +23,8 @@ class TaskOrm(Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     Имя: Mapped[str] = mapped_column(nullable=False)  # обязательное поле
     Возраст: Mapped[Optional[int]] = mapped_column(nullable=True)
-    Пожелания: Mapped[Optional[str]] = mapped_column(nullable=True)
-    description: Mapped[Optional[str]] = mapped_column(nullable=True)
+    Работа: Mapped[Optional[str]] = mapped_column(nullable=True)
+    Образование: Mapped[Optional[str]] = mapped_column(nullable=True)
 
 
 
