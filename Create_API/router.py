@@ -12,16 +12,20 @@ router = APIRouter(
     tags = ["Таски"]
 )
 
-
-
-
 @router.post("")
 async def add_task(
-        task:STaskAdd
-) -> STaskId:
-    task_id = await TaskRepository.add_one(task)
-    return {"ok": True, "task_id": task_id}
+    # task: Annotated[STaskAdd, Depends()], используй Depends если нужно вводить данный через params а не body
 
+        task: STaskAdd
+) -> STaskId:
+    try:
+        task_id = await TaskRepository.add_one(task)
+        return STaskId(ok=True, task_id=task_id, data=task)
+    except SQLAlchemyError as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Ошибка базы данных: {str(e)}"
+        )
 
 
 @router.get("/find_all")
@@ -37,18 +41,6 @@ async def get_tasks() -> list[STask]:
             detail=str(e) 
         )       
 
-
-# @router.delete("/Удалить/{task_id}")
-# async def delete_task(task_id: int) -> dict:
-#     try:
-#         await TaskRepository.delete_one(task_id)
-#         return {"ok": True, "task_id": task_id}
-    
-#     except Exception as e:
-#         raise HTTPException(
-#             status_code=500,
-#             detail=str(e) 
-#         )   
 
 @router.delete("/{task_id}", response_model=dict)
 async def delete_task(task_id: int):

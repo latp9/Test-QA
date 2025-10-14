@@ -16,9 +16,12 @@ class STask(STaskAdd):
     model_config = ConfigDict(from_attributes=True)
 
 
+
 class STaskId(BaseModel):
     ok: bool = True
     task_id: int
+    data: STaskAdd
+
 
 class STaskDelete(BaseModel):
     ok: bool = True
